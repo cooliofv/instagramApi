@@ -23,7 +23,12 @@ try{
 
   $account = Account::run()->login('cooliofv', 'QxBQ392c');
 
-  echo var_dump($account->getUser());
+//  echo var_dump($account->getUser()->following);
+
+
+  foreach ($account->getUser()->followers as $follower){
+      echo $follower;
+  }
 
 //  echo $account->getSomeData() . PHP_EOL;
 

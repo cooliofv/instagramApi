@@ -13,8 +13,8 @@ class User{
     public $website;
     public $bio;
     public $posts;
-    public $followers = [];
-    public $following = [];
+    public $followers;
+    public $following;
 
 
     public function __construct($id, $name, $username, $profile_pic_url, $website = null, $bio = null, $posts = null, $followers = null, $following = null)
@@ -31,9 +31,10 @@ class User{
 
     }
 
+
     public function __toString()
     {
-        return "ID: {$this->id} Name: {$this->name}".PHP_EOL;
+        return "ID: {$this->id} Username: {$this->username} Name: {$this->name}".PHP_EOL;
     }
 
 }//User

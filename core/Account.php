@@ -29,7 +29,7 @@ class Account
 
     }
 
-    private function loadFollowInfo(){
+    private function loadFollowers(){
 
         $followersData = $this->api->people->getFollowers($this->currentUser->id, $this->rankToken);
 
@@ -46,6 +46,10 @@ class Account
 
         }
 
+    }//loadFollowInfo
+
+    private function loadFollowings(){
+
         $followingData = $this->api->people->getFollowing($this->currentUser->id, $this->rankToken);
 
         $following = json_decode($followingData);
@@ -61,7 +65,7 @@ class Account
 
         }
 
-    }//loadFollowInfo
+    }//loadFollowings
 
     private function loadUser(){
 
@@ -81,7 +85,8 @@ class Account
             $data->user->biography
         );
 
-        $this->loadFollowInfo();
+        $this->loadFollowers();
+        $this->loadFollowings();
 
     }//loadUser
 
@@ -106,7 +111,7 @@ class Account
 
     public function getSomeData(){
 
-        return $this->api->people->getFollowing($this->currentUser->id, $this->rankToken)->printJson();
+//        return $this->api->;
     }
 
 
