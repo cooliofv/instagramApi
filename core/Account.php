@@ -29,11 +29,44 @@ class Account
 
     }
 
+    private function loadFollowInfo(){
+
+        $followersData = $this->api->people->getFollowers($this->currentUser->id, $this->rankToken);
+
+        $followers = json_decode($followersData);
+
+        foreach($followers->users as $follower){
+
+            $this->currentUser->followers[] = new User(
+                $follower->pk,
+                $follower->full_name,
+                $follower->username,
+                $follower->profile_pic_url
+                );
+
+        }
+
+        $followingData = $this->api->people->getFollowing($this->currentUser->id, $this->rankToken);
+
+        $following = json_decode($followingData);
+
+        foreach ($following->users as $fellow){
+
+            $this->currentUser->following[] = new User(
+                $fellow->pk,
+                $fellow->full_name,
+                $fellow->username,
+                $fellow->profile_pic_url
+            );
+
+        }
+
+    }//loadFollowInfo
+
     private function loadUser(){
 
-        $data = $this->api->account->getCurrentUser();
-
-        $data = json_decode($data);
+        $userData = $this->api->account->getCurrentUser();
+        $data = json_decode($userData);
 
         $this->email = $data->user->email;
         $this->phone = $data->user->phone_number;
@@ -43,9 +76,12 @@ class Account
             $data->user->pk,
             $data->user->full_name,
             $data->user->username,
+            $data->user->profile_pic_url,
             $data->user->external_url,
             $data->user->biography
         );
+
+        $this->loadFollowInfo();
 
     }//loadUser
 
@@ -70,7 +106,7 @@ class Account
 
     public function getSomeData(){
 
-        return $this->api->password;
+        return $this->api->people->getFollowing($this->currentUser->id, $this->rankToken)->printJson();
     }
 
 

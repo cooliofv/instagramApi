@@ -23,7 +23,7 @@ try{
 
   $account = Account::run()->login('cooliofv', 'QxBQ392c');
 
-  echo $account->getUser();
+  echo var_dump($account->getUser());
 
 //  echo $account->getSomeData() . PHP_EOL;
 
