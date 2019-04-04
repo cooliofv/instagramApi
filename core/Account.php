@@ -9,28 +9,35 @@ use InstagramAPI\Signatures;
 
 class Account
 {
-
+    /** @var Instagram */
     private $api;
+
+    /** @var mixed|string */
     private $rankToken;
 
+    /** @var User */
     private $currentUser;
 
+    /** @var string */
     private $email;
+
+    /** @var string */
     private $phone;
+
+    /** @var integer */
     private $gender;
 
+    /** @var Message */
     private $messages;
-
 
     public function __construct()
     {
         $this->api = new Instagram();
         $this->rankToken = Signatures::generateUUID();
-
     }
 
-    public static function run(){
-
+    public static function run()
+    {
         return new self;
     }//run
 
@@ -39,32 +46,32 @@ class Account
      * @param $password string
      * @return $this Account
      */
-    public function login($login, $password){
+    public function login($login, $password)
+    {
 
         $this->api->login($login, $password);
-
         $this->loadUser();
 
         return $this;
     }//login
 
-    public function getUser(){
-
+    public function getUser()
+    {
         return $this->currentUser;
     }//getUser
 
-    public function getSomeData(){
-
+    public function getSomeData()
+    {
 //        return $this->api->;
     }
 
-    public function postPhoto($data){
-
+    public function postPhoto($data)
+    {
         $this->api->timeline->uploadPhoto($data['picture'], $data['meta']);
     }//postPhoto
 
-    private function loadUser(){
-
+    private function loadUser()
+    {
         $userData = $this->api->account->getCurrentUser();
         $data = json_decode($userData);
 

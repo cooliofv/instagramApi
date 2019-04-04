@@ -2,7 +2,7 @@
 
 return [
 
-    'login'         => '',
-    'password'      => '',
+    'login'         => 'cooliofv',
+    'password'      => 'QxBQ392c',
 
 ];
