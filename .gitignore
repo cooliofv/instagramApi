@@ -1,4 +1,5 @@
 .idea
 pictures/*
 vendor
-config/config.php
+config/*
+!config/config.example.php
