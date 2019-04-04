@@ -2,14 +2,16 @@
 
 require __DIR__.'/init.php';
 
+\InstagramAPI\Instagram::$allowDangerousWebUsageAtMyOwnRisk = true;
+
 use core\Account;
+use debug\Debug;
 
 try{
 
     $config = require __DIR__.'/config/config.php';
 
     $account = Account::run()->login($config['login'], $config['password']);
-
 
   foreach ($account->getUser()->getFollowers() as $follower){
       echo $follower;
