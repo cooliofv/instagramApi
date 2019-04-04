@@ -6,32 +6,31 @@ namespace core;
 
 class User{
 
-    public $id;
-    public $name;
-    public $username;
-    public $profile_pic_url;
-    public $website;
-    public $bio;
-    public $posts;
+    private $id;
+    private $full_name;
+    private $username;
+    private $profile_pic_url;
+    private $website;
+    private $biography;
+    private $posts;
+
     private $followers;
     private $following;
-
     private $api;
     private $rankToken;
 
-
-    public function __construct($id, $name, $username, $profile_pic_url, $api, $rankToken, $website = null, $bio = null, $posts = null)
+    /**
+     * User constructor.
+     * @param $data array associative array with correct keys to assign class fields
+     */
+    public function __construct($data)
     {
-        $this->id = $id;
-        $this->name = $name;
-        $this->username = $username;
-        $this->profile_pic_url = $profile_pic_url;
-        $this->api = $api;
-        $this->rankToken = $rankToken;
-        $this->website = $website;
-        $this->bio = $bio;
-        $this->posts = $posts;
-    }
+
+        foreach ($data as $key => $value) {
+
+            $this->{$key} = isset($data[$key]) ? $data[$key] : null;
+        }//foreach
+    }//__constructor
 
     private function loadFollowers(){
 
@@ -41,17 +40,18 @@ class User{
 
         foreach($followers->users as $follower){
 
-            $this->followers[] = new User(
-                $follower->pk,
-                $follower->full_name,
-                $follower->username,
-                $follower->profile_pic_url,
-                $this->api,
-                $this->rankToken
-            );
+            $data = [
+                'id'              => $follower->pk,
+                'full_name'       => $follower->full_name,
+                'username'        => $follower->username,
+                'profile_pic_url' => $follower->profile_pic_url,
+                'api'             => $this->api,
+                'rankToken'       => $this->rankToken
+            ];
 
-        }
+            $this->followers[] = new User($data);
 
+        }//foreach
     }//loadFollowInfo
 
     private function loadFollowings(){
@@ -62,14 +62,16 @@ class User{
 
         foreach ($following->users as $fellow){
 
-            $this->following[] = new User(
-                $fellow->pk,
-                $fellow->full_name,
-                $fellow->username,
-                $fellow->profile_pic_url,
-                $this->api,
-                $this->rankToken
-            );
+            $data = [
+                'id'              => $fellow->pk,
+                'full_name'       => $fellow->full_name,
+                'username'        => $fellow->username,
+                'profile_pic_url' => $fellow->profile_pic_url,
+                'api'             => $this->api,
+                'rankToken'       => $this->rankToken
+            ];
+
+            $this->following[] = new User($data);
 
         }
 
@@ -87,11 +89,11 @@ class User{
         $this->loadFollowings();
 
         return $this->following;
-    }
+    }//getFollowings
 
     public function __toString()
     {
-        return "ID: {$this->id} Username: {$this->username} Name: {$this->name}".PHP_EOL;
+        return "ID: {$this->id} Username: {$this->username}"."\t\t\t"."Name: {$this->full_name}".PHP_EOL;
     }
 
 }//User

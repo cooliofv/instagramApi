@@ -29,34 +29,16 @@ class Account
 
     }
 
-
-    private function loadUser(){
-
-        $userData = $this->api->account->getCurrentUser();
-        $data = json_decode($userData);
-
-        $this->email = $data->user->email;
-        $this->phone = $data->user->phone_number;
-        $this->gender = $data->user->gender;
-
-        $this->currentUser = new User(
-            $data->user->pk,
-            $data->user->full_name,
-            $data->user->username,
-            $data->user->profile_pic_url,
-            $this->api,
-            $this->rankToken,
-            $data->user->external_url,
-            $data->user->biography
-        );
-
-    }//loadUser
-
     public static function run(){
 
         return new self;
     }//run
 
+    /**
+     * @param $login string
+     * @param $password string
+     * @return $this Account
+     */
     public function login($login, $password){
 
         $this->api->login($login, $password);
@@ -76,11 +58,32 @@ class Account
 //        return $this->api->;
     }
 
-    public function PostPhoto($data){
+    public function postPhoto($data){
 
         $this->api->timeline->uploadPhoto($data['picture'], $data['meta']);
+    }//postPhoto
 
-    }//Post
+    private function loadUser(){
 
+        $userData = $this->api->account->getCurrentUser();
+        $data = json_decode($userData);
+
+        $this->email = $data->user->email;
+        $this->phone = $data->user->phone_number;
+        $this->gender = $data->user->gender;
+
+        $data = [
+            'id'              => $data->user->pk,
+            'full_name'       => $data->user->full_name,
+            'username'        => $data->user->username,
+            'profile_pic_url' => $data->user->profile_pic_url,
+            'api'             => $this->api,
+            'rankToken'       => $this->rankToken,
+            'website'         => $data->user->external_url,
+            'biography'       => $data->user->biography
+        ];
+
+        $this->currentUser = new User($data);
+    }//loadUser
 
 }//Account
