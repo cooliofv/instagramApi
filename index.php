@@ -26,21 +26,25 @@ try{
 //  echo var_dump($account->getUser()->following);
 
 
-  foreach ($account->getUser()->followers as $follower){
-      echo $follower;
-  }
+//  foreach ($account->getUser()->getFollowers() as $follower){
+//      echo $follower;
+//  }
 
 //  echo $account->getSomeData() . PHP_EOL;
 
+    $pic = __DIR__.'/pictures/download.jpeg';
 
+    $metadata = [
+        'caption' => 'Cool post from API'
+    ];
 
-//    $items = $info->getItems();
-//
-//    $first = $items[0]->getMedia();
-//
-//    echo $first->getUser()->printJson();
+    $data = [
 
+        'picture' => $pic,
+        'meta' => $metadata
+    ];
 
+    $account->PostPhoto($data);
 
 }catch (Exception $exception){
 

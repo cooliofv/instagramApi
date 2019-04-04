@@ -29,43 +29,6 @@ class Account
 
     }
 
-    private function loadFollowers(){
-
-        $followersData = $this->api->people->getFollowers($this->currentUser->id, $this->rankToken);
-
-        $followers = json_decode($followersData);
-
-        foreach($followers->users as $follower){
-
-            $this->currentUser->followers[] = new User(
-                $follower->pk,
-                $follower->full_name,
-                $follower->username,
-                $follower->profile_pic_url
-                );
-
-        }
-
-    }//loadFollowInfo
-
-    private function loadFollowings(){
-
-        $followingData = $this->api->people->getFollowing($this->currentUser->id, $this->rankToken);
-
-        $following = json_decode($followingData);
-
-        foreach ($following->users as $fellow){
-
-            $this->currentUser->following[] = new User(
-                $fellow->pk,
-                $fellow->full_name,
-                $fellow->username,
-                $fellow->profile_pic_url
-            );
-
-        }
-
-    }//loadFollowings
 
     private function loadUser(){
 
@@ -81,12 +44,11 @@ class Account
             $data->user->full_name,
             $data->user->username,
             $data->user->profile_pic_url,
+            $this->api,
+            $this->rankToken,
             $data->user->external_url,
             $data->user->biography
         );
-
-        $this->loadFollowers();
-        $this->loadFollowings();
 
     }//loadUser
 
@@ -113,6 +75,12 @@ class Account
 
 //        return $this->api->;
     }
+
+    public function PostPhoto($data){
+
+        $this->api->timeline->uploadPhoto($data['picture'], $data['meta']);
+
+    }//Post
 
 
 }//Account
