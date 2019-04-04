@@ -11,9 +11,11 @@ try{
     $account = Account::run()->login($config['login'], $config['password']);
 
 
-  foreach ($account->getUser()->getFollowers() as $follower){
-      echo $follower;
-  }
+//  foreach ($account->getUser()->getFollowers() as $follower){
+//      echo $follower;
+//  }
+
+    var_dump($account->getSomeData());
 
     //echo $account->getSomeData() . PHP_EOL;
 

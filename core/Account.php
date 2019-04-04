@@ -62,7 +62,7 @@ class Account
 
     public function getSomeData()
     {
-//        return $this->api->;
+        return $this->api->;
     }
 
     public function postPhoto($data)
