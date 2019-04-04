@@ -2,7 +2,10 @@
 
 require __DIR__.'/init.php';
 
+\InstagramAPI\Instagram::$allowDangerousWebUsageAtMyOwnRisk = true;
+
 use core\Account;
+use debug\Debug;
 
 try{
 
@@ -11,11 +14,12 @@ try{
     $account = Account::run()->login($config['login'], $config['password']);
 
 
-//  foreach ($account->getUser()->getFollowers() as $follower){
-//      echo $follower;
-//  }
-
     var_dump($account->getSomeData());
+
+  foreach ($account->getUser()->getFollowers() as $follower){
+      echo $follower;
+  }
+
 
     //echo $account->getSomeData() . PHP_EOL;
 

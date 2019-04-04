@@ -4,6 +4,7 @@
 namespace core;
 
 
+use debug\Debug;
 use InstagramAPI\Instagram;
 use InstagramAPI\Signatures;
 
@@ -62,7 +63,7 @@ class Account
 
     public function getSomeData()
     {
-        return $this->api->;
+        return $this->api->timeline->getTimelineFeed();
     }
 
     public function postPhoto($data)
