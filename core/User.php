@@ -99,6 +99,38 @@ class User{
         }//foreach
     }//loadFollowings
 
+    private function loadPosts()
+    {
+        $posts = $this->api->timeline->getUserFeed($this->id);
+
+        $posts = json_decode($posts);
+
+        foreach ($posts->items as $post){
+
+            $data = [
+
+                'id'        => $post->id,
+                'pk'        => $post->pk,
+                'thumbnail' => $post->candidates[1]->url,
+                'picture'   => $post->candidates[0]->url,
+                'caption'   => $post->caption->text,
+                'taken_at'  => $post->taken_at,
+                'likes'     => null,
+                'comments'   => null
+            ];
+
+        }//foreach
+
+    }//loadPosts
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
     public function getFollowers()
     {
         $this->loadFollowers();

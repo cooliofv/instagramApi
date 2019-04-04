@@ -14,14 +14,12 @@ try{
     $account = Account::run()->login($config['login'], $config['password']);
 
 
-    var_dump($account->getSomeData());
+    var_dump($account->getSomeData()->items);
 
-  foreach ($account->getUser()->getFollowers() as $follower){
-      echo $follower;
-  }
+//  foreach ($account->getUser()->getFollowers() as $follower){
+//      echo $follower;
+//  }
 
-
-    //echo $account->getSomeData() . PHP_EOL;
 
     //------POST TEST UPLOADING-------
     $pic = __DIR__.'/pictures/download.jpeg';

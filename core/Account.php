@@ -63,7 +63,8 @@ class Account
 
     public function getSomeData()
     {
-        return $this->api->timeline->getTimelineFeed();
+
+        return json_decode($this->api->timeline->getUserFeed($this->currentUser->getId()));
     }
 
     public function postPhoto($data)
