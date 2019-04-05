@@ -14,11 +14,22 @@ try{
     $account = Account::run()->login($config['login'], $config['password']);
 
 
-    var_dump($account->getSomeData()->items);
+//    echo $account->getSomeData();
 
-//  foreach ($account->getUser()->getFollowers() as $follower){
-//      echo $follower;
-//  }
+  foreach ($account->getUser()->getPosts() as $post){
+
+//      $time = new DateTime($post->taken_at);
+
+
+      echo "<div><p>{$post->taken_at}</p>";
+      foreach ($post->thumbnails as $pic) {
+
+          echo "<img src = '{$pic}'>";
+      }
+       echo "<p>{$post->caption}</p></div>";
+  }
+
+//    var_dump($account->getUser()->getPosts()[0]);
 
 
     //------POST TEST UPLOADING-------

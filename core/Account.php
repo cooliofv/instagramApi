@@ -3,7 +3,6 @@
 
 namespace core;
 
-
 use debug\Debug;
 use InstagramAPI\Instagram;
 use InstagramAPI\Signatures;
@@ -33,6 +32,7 @@ class Account
 
     public function __construct()
     {
+
         $this->api = new Instagram();
         $this->rankToken = Signatures::generateUUID();
     }
@@ -63,8 +63,7 @@ class Account
 
     public function getSomeData()
     {
-
-        return json_decode($this->api->timeline->getUserFeed($this->currentUser->getId()));
+        return $this->api->timeline->getUserFeed($this->currentUser->getId());
     }
 
     public function postPhoto($data)

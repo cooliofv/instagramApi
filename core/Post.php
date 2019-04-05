@@ -3,21 +3,23 @@
 
 namespace core;
 
+use InstagramAPI\Instagram;
+use debug\Debug;
 
 class Post
 {
-    private $id;
-    private $pk;
+    public $id;
+    public $pk;
 
-    private $thumbnail;
-    private $picture;
-    private $caption;
+    public $thumbnails;
+    public $pictures;
+    public $caption;
 
-    private $likes;
-    private $comments;
+    public $likes;
+    public $comments;
 
 
-    private $taken_at;
+    public $taken_at;
 
     /**
      * Post constructor.
@@ -26,8 +28,12 @@ class Post
     public function __construct($data)
     {
         foreach ($data as $key => $value) {
-            $this->{$key} = isset($data[$key]) ? $data[$key] : null;
+            $this->{$key} = isset($data[$key]) ? $value : null;
         }//foreach
     }//__constructor
 
+    public function __toString()
+    {
+        return (string)printf("%-25d%-30s%s",$this->id,$this->pictures,$this->caption);
+    }
 }//Post

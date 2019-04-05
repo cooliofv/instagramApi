@@ -3,10 +3,11 @@
 
 namespace core;
 
-
+use debug\Debug;
 use InstagramAPI\Instagram;
 
-class User{
+class User
+{
 
     /** @var integer */
     private $id;
@@ -51,6 +52,42 @@ class User{
             $this->{$key} = isset($data[$key]) ? $data[$key] : null;
         }//foreach
     }//__constructor
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getFollowers()
+    {
+        $this->loadFollowers();
+
+        return $this->followers;
+    }//getFollowers
+
+    public function getFollowings()
+    {
+        $this->loadFollowings();
+
+        return $this->following;
+    }//getFollowings
+
+    /**
+     * @return Post
+     */
+    public function getPosts()
+    {
+        $this->loadPosts();
+        return $this->posts;
+    }
+
+    public function __toString()
+    {
+        return (string)printf("%-15d%-20s%-40s\n",$this->id, $this->username, $this->full_name);
+    }//toString
 
     /**
      * @param $obj Object from API
@@ -107,47 +144,38 @@ class User{
 
         foreach ($posts->items as $post){
 
+            $thumbnails = [];
+            $pictures = [];
+
+            if(isset($post->carousel_media)){
+
+                foreach ($post->carousel_media as $media) {
+
+                    $thumbnails[] = $media->image_versions2->candidates[1]->url;
+                    $pictures[] = $media->image_versions2->candidates[0]->url;
+                }
+            }else{
+
+                $thumbnails[] = $post->image_versions2->candidates[1]->url;
+                $pictures[] = $post->image_versions2->candidates[0]->url;
+            }//else
+
+
             $data = [
 
                 'id'        => $post->id,
                 'pk'        => $post->pk,
-                'thumbnail' => $post->candidates[1]->url,
-                'picture'   => $post->candidates[0]->url,
+                'thumbnails' => $thumbnails,
+                'pictures'   => $pictures,
                 'caption'   => $post->caption->text,
                 'taken_at'  => $post->taken_at,
                 'likes'     => null,
                 'comments'   => null
             ];
 
+            $this->posts[] = new Post($data);
+
         }//foreach
 
     }//loadPosts
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getFollowers()
-    {
-        $this->loadFollowers();
-
-        return $this->followers;
-    }//getFollowers
-
-    public function getFollowings()
-    {
-        $this->loadFollowings();
-
-        return $this->following;
-    }//getFollowings
-
-    public function __toString()
-    {
-        return (string)printf("%-15d%-20s%-40s\n",$this->id, $this->username, $this->full_name);
-    }//toString
-
 }//User
