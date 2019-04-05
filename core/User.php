@@ -27,9 +27,6 @@ class User
     /** @var string*/
     private $biography;
 
-    /** @var Post */
-    private $posts;
-
     /** @var User */
     private $followers;
 
@@ -74,15 +71,6 @@ class User
 
         return $this->following;
     }//getFollowings
-
-    /**
-     * @return Post
-     */
-    public function getPosts()
-    {
-        $this->loadPosts();
-        return $this->posts;
-    }
 
     public function __toString()
     {
@@ -136,46 +124,4 @@ class User
         }//foreach
     }//loadFollowings
 
-    private function loadPosts()
-    {
-        $posts = $this->api->timeline->getUserFeed($this->id);
-
-        $posts = json_decode($posts);
-
-        foreach ($posts->items as $post){
-
-            $thumbnails = [];
-            $pictures = [];
-
-            if(isset($post->carousel_media)){
-
-                foreach ($post->carousel_media as $media) {
-
-                    $thumbnails[] = $media->image_versions2->candidates[1]->url;
-                    $pictures[] = $media->image_versions2->candidates[0]->url;
-                }
-            }else{
-
-                $thumbnails[] = $post->image_versions2->candidates[1]->url;
-                $pictures[] = $post->image_versions2->candidates[0]->url;
-            }//else
-
-
-            $data = [
-
-                'id'        => $post->id,
-                'pk'        => $post->pk,
-                'thumbnails' => $thumbnails,
-                'pictures'   => $pictures,
-                'caption'   => $post->caption->text,
-                'taken_at'  => $post->taken_at,
-                'likes'     => null,
-                'comments'   => null
-            ];
-
-            $this->posts[] = new Post($data);
-
-        }//foreach
-
-    }//loadPosts
 }//User

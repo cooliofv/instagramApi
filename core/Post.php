@@ -36,4 +36,5 @@ class Post
     {
         return (string)printf("%-25d%-30s%s",$this->id,$this->pictures,$this->caption);
     }
+
 }//Post

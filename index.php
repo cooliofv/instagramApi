@@ -13,13 +13,17 @@ try{
 
     $account = Account::run()->login($config['login'], $config['password']);
 
-
+//
 //    echo $account->getSomeData();
+//    exit;
 
-  foreach ($account->getUser()->getPosts() as $post){
+//    $id = $account->user->getFollowings()[0]->getId();
 
-//      $time = new DateTime($post->taken_at);
 
+    $account->paginateFeed();
+
+
+    foreach ($account->feed as $post){
 
       echo "<div><p>{$post->taken_at}</p>";
       foreach ($post->thumbnails as $pic) {
@@ -28,8 +32,6 @@ try{
       }
        echo "<p>{$post->caption}</p></div>";
   }
-
-//    var_dump($account->getUser()->getPosts()[0]);
 
 
     //------POST TEST UPLOADING-------
