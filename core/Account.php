@@ -27,7 +27,11 @@ class Account
     /** @var Message */
     private $messages;
 
-    private $maxId;
+    /** @var string  */
+    private $maxPostId = null;
+
+    /** @var string  */
+    private $maxFeedId = null;
 
     /** @var Post */
     public $feed;
@@ -39,33 +43,15 @@ class Account
     public $user;
 
     /** Account constructor. */
-    public function __construct()
+    public function __construct($login, $password)
     {
-
         $this->api = new Instagram();
         $this->rankToken = Signatures::generateUUID();
-        $this->maxId = null;
-    }
 
-    public static function run()
-    {
-        return new self;
-    }//run
-
-    /**
-     * @param $login string
-     * @param $password string
-     * @return $this Account
-     */
-    public function login($login, $password)
-    {
         $this->api->login($login, $password);
         $this->loadUser();
-//        $this->loadFeed();
         $this->posts = $this->getUserPosts($this->user->getId());
-
-        return $this;
-    }//login
+    }
 
     public function getSomeData()
     {
@@ -82,6 +68,9 @@ class Account
         $posts = $this->api->timeline->getUserFeed($userId, $maxId);
 
         $this->maxId = $posts->getNextMaxId();
+
+        if($this->maxId === null)
+            return;
 
         $posts = json_decode($posts);
 
@@ -125,28 +114,28 @@ class Account
         return $resultPosts;
     }//loadPosts
 
-    public function paginateFeed()
+    public function paginateFeed($feedCount = 0)
     {
-
+        while(count((array)$this->feed) < $feedCount ){
             $this->loadFeed();
-
+        }
 
     }//paginateFeed
 
+
+
     private function loadFeed()
     {
-        $feedPosts = $this->api->timeline->getTimelineFeed($this->maxId);
+        $feedPosts = $this->api->timeline->getTimelineFeed($this->maxFeedId);
 
         $this->maxId = $feedPosts->getNextMaxId();
 
-//        Debug::dd($feedPosts);
-
-        if($this->maxId === null)
+        if($this->maxFeedId === null)
             return;
 
         $feedPosts = json_decode($feedPosts);
 
-//        sleep(3);
+//        sleep(random_int(3,7));
 
         $resultPosts = [];
 
@@ -160,14 +149,12 @@ class Account
 
             if(isset($feed_item->media_or_ad->carousel_media)){
 
-                foreach ($feed_item->media_or_ad->carousel_media as $media) {
+                foreach ($feed_item->media_or_ad->carousel_media as $media){
 
                     $thumbnails[] = $media->image_versions2->candidates[1]->url;
                     $pictures[] = $media->image_versions2->candidates[0]->url;
-                }
+                }//foreach
             }else{
-
-//                Debug::dd($feed_item);
                 $thumbnails[] = $feed_item->media_or_ad->image_versions2->candidates[1]->url;
                 $pictures[] = $feed_item->media_or_ad->image_versions2->candidates[0]->url;
             }//else
@@ -185,9 +172,7 @@ class Account
             ];
 
             $this->feed[] = new Post($data);
-
         }//foreach
-
     }//loadFeed
 
     private function loadUser()

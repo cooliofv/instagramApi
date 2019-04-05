@@ -11,7 +11,7 @@ try{
 
     $config = require __DIR__.'/config/config.php';
 
-    $account = Account::run()->login($config['login'], $config['password']);
+    $account = new Account($config['login'], $config['password']);
 
 //
 //    echo $account->getSomeData();
@@ -20,9 +20,12 @@ try{
 //    $id = $account->user->getFollowings()[0]->getId();
 
 
-    $account->paginateFeed();
+    $account->paginateFeed(20);
+    $account->paginateFeed(40);
+    $account->paginateFeed(80);
 
 
+    echo count((array)$account->feed);
     foreach ($account->feed as $post){
 
       echo "<div><p>{$post->taken_at}</p>";
@@ -31,7 +34,7 @@ try{
           echo "<img src = '{$pic}'>";
       }
        echo "<p>{$post->caption}</p></div>";
-  }
+    }
 
 
     //------POST TEST UPLOADING-------

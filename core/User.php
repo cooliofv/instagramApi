@@ -8,7 +8,6 @@ use InstagramAPI\Instagram;
 
 class User
 {
-
     /** @var integer */
     private $id;
 
