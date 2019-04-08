@@ -13,22 +13,17 @@ try{
 
     $account = new Account($config['login'], $config['password']);
 
-//
-//    echo $account->getSomeData();
-//    exit;
 
-//    $id = $account->user->getFollowings()[0]->getId();
+    $id = $account->user->getFollowers()[7]->getId();
 
-
-    $account->paginateFeed(20);
-    $account->paginateFeed(40);
-    $account->paginateFeed(80);
+    $posts = $account->getPostsByUserId($id);
 
 
-    echo count((array)$account->feed);
-    foreach ($account->feed as $post){
+    foreach ($posts as $post){
 
-      echo "<div><p>{$post->taken_at}</p>";
+        $date = date('d-m-Y', $post->taken_at);
+
+      echo "<div><p>TIMESTAMP: {$date} </p><p>ID: {$post->pk}</p>";
       foreach ($post->thumbnails as $pic) {
 
           echo "<img src = '{$pic}'>";

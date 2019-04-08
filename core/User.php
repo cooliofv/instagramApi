@@ -38,6 +38,9 @@ class User
     /** @var string */
     private $rankToken;
 
+    /** @var bool */
+    private $is_private;
+
     /**
      * User constructor.
      * @param $data array associative array with correct keys to assign class fields
@@ -45,7 +48,7 @@ class User
     public function __construct($data)
     {
         foreach ($data as $key => $value) {
-            $this->{$key} = isset($data[$key]) ? $data[$key] : null;
+            $this->{$key} = isset($data[$key]) ? $data[$key] : '';
         }//foreach
     }//__constructor
 
@@ -71,6 +74,11 @@ class User
         return $this->following;
     }//getFollowings
 
+    public function isPrivate()
+    {
+        return $this->is_private;
+    }
+
     public function __toString()
     {
         return (string)printf("%-15d%-20s%-40s\n",$this->id, $this->username, $this->full_name);
@@ -88,7 +96,8 @@ class User
             'username'        => $obj->username,
             'profile_pic_url' => $obj->profile_pic_url,
             'api'             => $this->api,
-            'rankToken'       => $this->rankToken
+            'rankToken'       => $this->rankToken,
+            'is_private'      => $obj->is_private
         ];
 
         return $data;
@@ -99,6 +108,7 @@ class User
         $followersData = $this->api->people->getFollowers($this->id, $this->rankToken);
 
         $followers = json_decode($followersData);
+
 
         foreach($followers->users as $follower){
 

@@ -28,13 +28,13 @@ class Post
     public function __construct($data)
     {
         foreach ($data as $key => $value) {
-            $this->{$key} = isset($data[$key]) ? $value : null;
+            $this->{$key} = isset($data[$key]) ? $value : '';
         }//foreach
     }//__constructor
 
     public function __toString()
     {
-        return (string)printf("%-25d%-30s%s",$this->id,$this->pictures,$this->caption);
+        return (string)printf("%-25d%-40s%s%s",$this->id,$this->pk,$this->pictures,$this->caption);
     }
 
 }//Post

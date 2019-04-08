@@ -15,15 +15,6 @@ class Account
     /** @var mixed|string */
     private $rankToken;
 
-    /** @var string */
-    private $email;
-
-    /** @var string */
-    private $phone;
-
-    /** @var integer */
-    private $gender;
-
     /** @var Message */
     private $messages;
 
@@ -49,32 +40,120 @@ class Account
         $this->rankToken = Signatures::generateUUID();
 
         $this->api->login($login, $password);
-        $this->loadUser();
-        $this->posts = $this->getUserPosts($this->user->getId());
+        $this->user = $this->loadUser($login);
     }
 
-    public function getSomeData()
-    {
-        return $this->api->timeline->getTimelineFeed();
-    }
-
+    /** @param $data */
     public function postPhoto($data)
     {
         $this->api->timeline->uploadPhoto($data['picture'], $data['meta']);
     }//postPhoto
 
-    public function getUserPosts($userId, $maxId = null){
+    /** @param $feedCount integer  */
+    public function paginateFeed($feedCount = 0)
+    {
+        while(count((array)$this->feed) < $feedCount ){
+            $this->loadFeed();
+            if(!isset($this->maxFeedId))
+                break;
+        }//while
+    }//paginateFeed
 
-        $posts = $this->api->timeline->getUserFeed($userId, $maxId);
+    /** @param $userId integer
+     *  @param $postCount integer
+     */
+    public function paginatePosts($userId,$postCount = 10)
+    {
+        while (count((array)$this->posts) < $postCount){
+            $posts = $this->loadPosts($userId, $this->maxPostId);
 
-        $this->maxId = $posts->getNextMaxId();
+            $result = array_merge((array)$this->posts, $posts);
+            $this->posts = array_map("unserialize", array_unique(array_map("serialize",$result)));
 
-        if($this->maxId === null)
+            if(!isset($this->maxPostId))
+                break;
+        }//while
+    }//paginatePosts
+
+    /** @param  $userId integer
+     *  @return string
+     */
+    public function followUser($userId)
+    {
+        $result = $this->api->people->follow($userId);
+
+        return $result;
+    }//followUser
+
+    /** @param  $userId integer
+     *  @return string
+     */
+    public function unfollowUser($userId)
+    {
+        $result = $this->api->people->unfollow($userId);
+
+        return $result;
+    }//unfollowUser
+
+    /** @param  $postId string
+     *  @return string
+     */
+    public function likePost($postId)
+    {
+        $result = $this->api->media->like($postId);
+
+        return $result;
+    }//likePost
+
+    /** @param  $postId string
+     *  @return string
+     */
+    public function unlikePost($postId)
+    {
+        $result = $this->api->media->unlike($postId);
+
+        return $result;
+    }//unlikePost
+
+    /** @param  $name string
+     *  @return object array
+     */
+    public function getFollowersByName($name)
+    {
+        $resultUser = $this->loadUser($name);
+
+        $followers = $resultUser->getFollowers();
+
+        return $followers;
+    }//getFollowersByName
+
+    /**
+     * @param $userId integer
+     * @return object|void array
+     */
+    public function getPostsByUserId($userId)
+    {
+        $result = $this->loadPosts($userId);
+
+        return $result;
+    }
+
+    /**
+     * @param $userId integer
+     * @param null $maxPostId
+     * @return object|void array
+     */
+    private function loadPosts($userId, $maxPostId = null)
+    {
+        $posts = $this->api->timeline->getUserFeed($userId, $maxPostId);
+
+        $this->maxPostId = $posts->getNextMaxId();
+
+        if($this->maxPostId === null && count((array)$posts->getItems()) === 0)
             return;
 
         $posts = json_decode($posts);
-
-        $resultPosts = [];
+        $result = [];
 
         foreach ($posts->items as $post){
 
@@ -101,34 +180,22 @@ class Account
                 'pk'         => $post->pk,
                 'thumbnails' => $thumbnails,
                 'pictures'   => $pictures,
-                'caption'    => $post->caption->text,
+                'caption'    => isset($post->caption) ? $post->caption->text : '',
                 'taken_at'   => $post->taken_at,
                 'likes'      => null,
                 'comments'   => null
             ];
 
-            $resultPosts[] = new Post($data);
-
+            $result[] = new Post($data);
         }//foreach
-
-        return $resultPosts;
+        return $result;
     }//loadPosts
-
-    public function paginateFeed($feedCount = 0)
-    {
-        while(count((array)$this->feed) < $feedCount ){
-            $this->loadFeed();
-        }
-
-    }//paginateFeed
-
-
 
     private function loadFeed()
     {
         $feedPosts = $this->api->timeline->getTimelineFeed($this->maxFeedId);
 
-        $this->maxId = $feedPosts->getNextMaxId();
+        $this->maxFeedId = $feedPosts->getNextMaxId();
 
         if($this->maxFeedId === null)
             return;
@@ -136,8 +203,6 @@ class Account
         $feedPosts = json_decode($feedPosts);
 
 //        sleep(random_int(3,7));
-
-        $resultPosts = [];
 
         foreach ($feedPosts->feed_items as $feed_item) {
 
@@ -175,14 +240,14 @@ class Account
         }//foreach
     }//loadFeed
 
-    private function loadUser()
+    /**
+     * @param $name string
+     * @return User
+     */
+    private function loadUser($name)
     {
-        $userData = $this->api->account->getCurrentUser();
+        $userData = $this->api->people->getInfoByName($name);
         $data = json_decode($userData);
-
-        $this->email = $data->user->email;
-        $this->phone = $data->user->phone_number;
-        $this->gender = $data->user->gender;
 
         $data = [
             'id'              => $data->user->pk,
@@ -195,7 +260,7 @@ class Account
             'biography'       => $data->user->biography
         ];
 
-        $this->user = new User($data);
+        return new User($data);
     }//loadUser
 
 }//Account
