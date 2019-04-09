@@ -20,17 +20,34 @@ class User
     /** @var string */
     private $profile_pic_url;
 
-    /** @var string */
-    private $website;
-
-    /** @var string*/
-    private $biography;
-
     /** @var User */
     private $followers;
 
     /** @var User*/
     private $following;
+
+    /** @var integer */
+    private $follower_count;
+
+    /** @var integer */
+    private $following_count;
+
+    /** @var string */
+    private $maxFollowerId;
+
+    /** @var string */
+    private $maxFollowingId;
+
+    /** @var Post */
+    public $posts;
+
+    /** @var string  */
+    private $maxPostId = null;
+
+    /** @var integer */
+    private $media_count;
+
+    private $biography;
 
     /** @var Instagram */
     private $api;
@@ -52,37 +69,80 @@ class User
         }//foreach
     }//__constructor
 
-    /**
-     * @return int
-     */
+    /** @return int */
     public function getId(): int
     {
         return $this->id;
-    }
+    }//getId
 
+    public function echoInfo(){
+
+        echo "<div><p>ID: {$this->id}</p>";
+        echo "<div><p>Name: {$this->full_name}</p>";
+        echo "<img src = '{$this->profile_pic_url}' alt='avatar'>";
+        echo "</div>";
+
+    }//echoInfo
+
+    /** @param $userId integer
+     *  @param $postCount integer
+     */
+    public function getPosts($userId,$postCount = 10)
+    {
+        while (count((array)$this->posts) < $postCount){
+            $posts = $this->loadPosts($userId, $this->maxPostId);
+
+            $result = array_merge((array)$this->posts, $posts);
+            $this->posts = $result;
+
+            if(!isset($this->maxPostId))
+                break;
+        }//while
+
+        return $this->posts;
+    }//paginatePosts
+
+    /** @return array of User */
     public function getFollowers()
     {
-        $this->loadFollowers();
+        while(count((array)$this->followers) < $this->follower_count) {
+
+            $followers = $this->loadFollowers($this->maxFollowerId);
+
+            sleep(rand(2,4));
+
+            $result = array_merge((array)$this->followers, $followers);
+            $this->followers = $result;
+
+            if(!isset($this->maxFollowerId))
+                break;
+        }//while
 
         return $this->followers;
     }//getFollowers
 
+    /** @return array of User */
     public function getFollowings()
     {
-        $this->loadFollowings();
+        while(count((array)$this->following) < $this->following_count) {
+
+            $following = $this->loadFollowings($this->maxFollowingId);
+
+            $result = array_merge((array)$this->following, $following);
+            $this->following = $result;
+
+            if(!isset($this->maxFollowingId))
+                break;
+        }//while
 
         return $this->following;
     }//getFollowings
 
+    /** @return boolean */
     public function isPrivate()
     {
         return $this->is_private;
     }
-
-    public function __toString()
-    {
-        return (string)printf("%-15d%-20s%-40s\n",$this->id, $this->username, $this->full_name);
-    }//toString
 
     /**
      * @param $obj Object from API
@@ -103,34 +163,102 @@ class User
         return $data;
     }//objToArray
 
-    private function loadFollowers()
+    /**
+     * @param $userId integer
+     * @param null $maxPostId
+     */
+    private function loadPosts($userId, $maxPostId = null)
     {
-        $followersData = $this->api->people->getFollowers($this->id, $this->rankToken);
+        $posts = $this->api->timeline->getUserFeed($userId, $maxPostId);
+
+        $this->maxPostId = $posts->getNextMaxId();
+
+        if($this->maxPostId === null && count((array)$posts->getItems()) === 0)
+            return [];
+
+        $posts = json_decode($posts);
+        $result = [];
+
+        foreach ($posts->items as $post){
+
+            $thumbnails = [];
+            $pictures = [];
+
+            if(isset($post->carousel_media)){
+
+                foreach ($post->carousel_media as $media) {
+
+                    $thumbnails[] = $media->image_versions2->candidates[1]->url;
+                    $pictures[] = $media->image_versions2->candidates[0]->url;
+                }
+            }else{
+
+                $thumbnails[] = $post->image_versions2->candidates[1]->url;
+                $pictures[] = $post->image_versions2->candidates[0]->url;
+            }//else
+
+
+            $data = [
+
+                'id'         => $post->id,
+                'pk'         => $post->pk,
+                'thumbnails' => $thumbnails,
+                'pictures'   => $pictures,
+                'caption'    => isset($post->caption) ? $post->caption->text : '',
+                'taken_at'   => $post->taken_at,
+                'likes'      => null,
+                'comments'   => null
+            ];
+
+            $result[] = new Post($data);
+        }//foreach
+        return $result;
+    }//loadPosts
+
+    private function loadFollowers($nextMaxId = null)
+    {
+        $followersData = $this->api->people->getFollowers($this->id, $this->rankToken, $searchStr = null, $nextMaxId);
+
+        $this->maxFollowerId = $followersData->getNextMaxId();
+
+        if($this->maxFollowingId === null && count((array)$followersData->getUsers()) === 0)
+            return [];
 
         $followers = json_decode($followersData);
 
+        $result = [];
 
         foreach($followers->users as $follower){
 
             $data = $this->objToArray($follower);
 
-            $this->followers[] = new User($data);
+            $result[] = new User($data);
         }//foreach
+
+        return $result;
     }//loadFollowInfo
 
-    private function loadFollowings()
+    private function loadFollowings($nextMaxId = null)
     {
-        $followingData = $this->api->people->getFollowing($this->id, $this->rankToken);
+        $followingData = $this->api->people->getFollowing($this->id, $this->rankToken, $searchStr = null, $nextMaxId);
+
+        $this->maxFollowingId = $followingData->getNextMaxId();
+
+        if($this->maxFollowingId === null && count((array)$followingData->getUsers()) === 0)
+            return [];
 
         $following = json_decode($followingData);
+
+        $result = [];
 
         foreach ($following->users as $fellow){
 
             $data = $this->objToArray($fellow);
 
-            $this->following[] = new User($data);
-
+            $result[] = new User($data);
         }//foreach
+
+        return $result;
     }//loadFollowings
 
 }//User

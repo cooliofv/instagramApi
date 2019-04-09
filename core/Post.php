@@ -32,9 +32,17 @@ class Post
         }//foreach
     }//__constructor
 
-    public function __toString()
-    {
-        return (string)printf("%-25d%-40s%s%s",$this->id,$this->pk,$this->pictures,$this->caption);
-    }
+    public function echoInfo(){
+
+        $date = date('d-m-Y', $this->taken_at);
+
+        echo "<div><p>TIMESTAMP: {$date} </p><p>ID: {$this->pk}</p>";
+        foreach ($this->thumbnails as $pic) {
+
+            echo "<img src = '{$pic}'>";
+        }
+        echo "<p>{$this->caption}</p></div>";
+
+    }//echoInfo
 
 }//Post

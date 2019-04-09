@@ -13,23 +13,25 @@ try{
 
     $account = new Account($config['login'], $config['password']);
 
+//    $dontFollowBack = $account->getDontFollowBack();
+//
+//    foreach ($dontFollowBack as $user){
+//        $user->echoInfo();
+//    }
 
-    $id = $account->user->getFollowers()[7]->getId();
-
-    $posts = $account->getPostsByUserId($id);
 
 
-    foreach ($posts as $post){
 
-        $date = date('d-m-Y', $post->taken_at);
 
-      echo "<div><p>TIMESTAMP: {$date} </p><p>ID: {$post->pk}</p>";
-      foreach ($post->thumbnails as $pic) {
+    $account->massUnfollowing(5,true);
 
-          echo "<img src = '{$pic}'>";
-      }
-       echo "<p>{$post->caption}</p></div>";
-    }
+
+//    $posts = $account->user->getPosts($id, 15);
+//
+//    foreach ($posts as $post){
+//
+//       $post->echoInfo();
+//    }
 
 
     //------POST TEST UPLOADING-------

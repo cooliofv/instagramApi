@@ -19,16 +19,10 @@ class Account
     private $messages;
 
     /** @var string  */
-    private $maxPostId = null;
-
-    /** @var string  */
     private $maxFeedId = null;
 
     /** @var Post */
     public $feed;
-
-    /** @var Post */
-    public $posts;
 
     /** @var User */
     public $user;
@@ -41,6 +35,15 @@ class Account
 
         $this->api->login($login, $password);
         $this->user = $this->loadUser($login);
+    }
+
+    public function getUserInfo($id)
+    {
+        $result = $this->api->people->getFriendship($id);
+
+        Debug::prn($result);
+        exit;
+
     }
 
     /** @param $data */
@@ -59,60 +62,71 @@ class Account
         }//while
     }//paginateFeed
 
-    /** @param $userId integer
-     *  @param $postCount integer
-     */
-    public function paginatePosts($userId,$postCount = 10)
-    {
-        while (count((array)$this->posts) < $postCount){
-            $posts = $this->loadPosts($userId, $this->maxPostId);
-
-            $result = array_merge((array)$this->posts, $posts);
-            $this->posts = array_map("unserialize", array_unique(array_map("serialize",$result)));
-
-            if(!isset($this->maxPostId))
-                break;
-        }//while
-    }//paginatePosts
-
     /** @param  $userId integer
-     *  @return string
+     *  @return object
      */
     public function followUser($userId)
     {
         $result = $this->api->people->follow($userId);
 
-        return $result;
+        return json_decode($result);
     }//followUser
 
     /** @param  $userId integer
-     *  @return string
+     *  @return object
      */
     public function unfollowUser($userId)
     {
         $result = $this->api->people->unfollow($userId);
 
-        return $result;
+        return json_decode($result);
     }//unfollowUser
 
+    /** @var $counter integer
+     *  @var $reverse boolean
+     */
+    public function massUnfollowing($counter = 50, $reverse = false)
+    {
+        $followings = $this->user->getFollowings();
+
+        $arrayLength = count($followings);
+
+        if($arrayLength < $counter)
+            $counter = $arrayLength;
+
+        for ($i = 0; $i < $counter; $i++){
+
+           if($reverse){
+               $user = array_pop($followings);
+           }else{
+               $user = array_shift($followings);
+           }//else
+
+            $this->unfollowUser($user->getId());
+
+           sleep(2);
+
+        }//for counter
+    }//massUnfollowing
+
     /** @param  $postId string
-     *  @return string
+     *  @return object
      */
     public function likePost($postId)
     {
         $result = $this->api->media->like($postId);
 
-        return $result;
+        return json_decode($result);
     }//likePost
 
     /** @param  $postId string
-     *  @return string
+     *  @return object
      */
     public function unlikePost($postId)
     {
         $result = $this->api->media->unlike($postId);
 
-        return $result;
+        return json_decode($result);
     }//unlikePost
 
     /** @param  $name string
@@ -127,70 +141,25 @@ class Account
         return $followers;
     }//getFollowersByName
 
-    /**
-     * @param $userId integer
-     * @return object|void array
-     */
-    public function getPostsByUserId($userId)
-    {
-        $result = $this->loadPosts($userId);
+    /** @return  array of Users */
+    public function getDontFollowBack(){
 
-        return $result;
-    }
+        $dontFollowBack = [];
 
-    /**
-     * @param $userId integer
-     * @param null $maxPostId
-     * @return object|void array
-     */
-    private function loadPosts($userId, $maxPostId = null)
-    {
-        $posts = $this->api->timeline->getUserFeed($userId, $maxPostId);
+        foreach ($this->user->getFollowings() as $following){
 
-        $this->maxPostId = $posts->getNextMaxId();
+            $result = $this->api->people->getFriendship($following->getId());
+            $result = json_decode($result);
 
-        if($this->maxPostId === null && count((array)$posts->getItems()) === 0)
-            return;
-
-        $posts = json_decode($posts);
-        $result = [];
-
-        foreach ($posts->items as $post){
-
-            $thumbnails = [];
-            $pictures = [];
-
-            if(isset($post->carousel_media)){
-
-                foreach ($post->carousel_media as $media) {
-
-                    $thumbnails[] = $media->image_versions2->candidates[1]->url;
-                    $pictures[] = $media->image_versions2->candidates[0]->url;
-                }
-            }else{
-
-                $thumbnails[] = $post->image_versions2->candidates[1]->url;
-                $pictures[] = $post->image_versions2->candidates[0]->url;
-            }//else
-
-
-            $data = [
-
-                'id'         => $post->id,
-                'pk'         => $post->pk,
-                'thumbnails' => $thumbnails,
-                'pictures'   => $pictures,
-                'caption'    => isset($post->caption) ? $post->caption->text : '',
-                'taken_at'   => $post->taken_at,
-                'likes'      => null,
-                'comments'   => null
-            ];
-
-            $result[] = new Post($data);
+            if(!$result->followed_by){
+                $dontFollowBack[] = $following;
+            }
         }//foreach
-        return $result;
-    }//loadPosts
 
+        return $dontFollowBack;
+    }//getDontFollowBack
+
+    /** @return void */
     private function loadFeed()
     {
         $feedPosts = $this->api->timeline->getTimelineFeed($this->maxFeedId);
@@ -257,7 +226,10 @@ class Account
             'api'             => $this->api,
             'rankToken'       => $this->rankToken,
             'website'         => $data->user->external_url,
-            'biography'       => $data->user->biography
+            'biography'       => $data->user->biography,
+            'follower_count'  => $data->user->follower_count,
+            'following_count' => $data->user->following_count,
+            'media_count'     => $data->user->media_count
         ];
 
         return new User($data);
