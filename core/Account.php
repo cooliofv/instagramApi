@@ -130,7 +130,7 @@ class Account
     }//unlikePost
 
     /** @param  $name string
-     *  @return object array
+     *  @return array of User
      */
     public function getFollowersByName($name)
     {

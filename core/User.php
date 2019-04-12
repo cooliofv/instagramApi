@@ -86,8 +86,9 @@ class User
 
     /** @param $userId integer
      *  @param $postCount integer
+     * @return array of Post
      */
-    public function getPosts($userId,$postCount = 10)
+    public function getPosts($userId,$postCount = 20)
     {
         while (count((array)$this->posts) < $postCount){
             $posts = $this->loadPosts($userId, $this->maxPostId);
@@ -109,7 +110,7 @@ class User
 
             $followers = $this->loadFollowers($this->maxFollowerId);
 
-            sleep(rand(2,4));
+            sleep(rand(5,8));//Pause to prevent API throttling
 
             $result = array_merge((array)$this->followers, $followers);
             $this->followers = $result;
@@ -127,6 +128,8 @@ class User
         while(count((array)$this->following) < $this->following_count) {
 
             $following = $this->loadFollowings($this->maxFollowingId);
+
+            sleep(rand(5,8));//Pause to prevent API throttling
 
             $result = array_merge((array)$this->following, $following);
             $this->following = $result;
@@ -166,6 +169,7 @@ class User
     /**
      * @param $userId integer
      * @param null $maxPostId
+     * @return array of Post
      */
     private function loadPosts($userId, $maxPostId = null)
     {
@@ -221,7 +225,7 @@ class User
 
         $this->maxFollowerId = $followersData->getNextMaxId();
 
-        if($this->maxFollowingId === null && count((array)$followersData->getUsers()) === 0)
+        if($this->maxFollowerId === null && count((array)$followersData->getUsers()) === 0)
             return [];
 
         $followers = json_decode($followersData);
